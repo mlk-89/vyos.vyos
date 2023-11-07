@@ -34,7 +34,7 @@ extends_documentation_fragment:
 - vyos.vyos.vyos
 notes:
 - Tested against VyOS 1.1.8 (helium).
-- This module works with connection C(network_cli). See L(the VyOS OS Platform Options,../network/user_guide/platform_vyos.html).
+- This module works with connection C(ansible.netcommon.network_cli). See L(the VyOS OS Platform Options,../network/user_guide/platform_vyos.html).
 - To ensure idempotency and correct diff the configuration lines in the relevant module options should be similar to how they
   appear if present in the running configuration on device including the indentation.
 options:
@@ -197,22 +197,17 @@ import re
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import ConnectionError
+
 from ansible_collections.vyos.vyos.plugins.module_utils.network.vyos.vyos import (
-    load_config,
     get_config,
+    get_connection,
+    load_config,
     run_commands,
 )
-from ansible_collections.vyos.vyos.plugins.module_utils.network.vyos.vyos import (
-    vyos_argument_spec,
-    get_connection,
-)
-
 
 DEFAULT_COMMENT = "configured by vyos_config"
 
-CONFIG_FILTERS = [
-    re.compile(r"set system login user \S+ authentication encrypted-password")
-]
+CONFIG_FILTERS = [re.compile(r"set system login user \S+ authentication encrypted-password")]
 
 
 def get_candidate(module):
@@ -317,8 +312,7 @@ def run(module, result):
 
         if result.get("filtered"):
             result["warnings"].append(
-                "Some configuration commands were "
-                "removed, please see the filtered key"
+                "Some configuration commands were removed, please see the filtered key"
             )
 
         result["changed"] = True
@@ -339,8 +333,6 @@ def main():
         backup_options=dict(type="dict", options=backup_spec),
         save=dict(type="bool", default=False),
     )
-
-    argument_spec.update(vyos_argument_spec)
 
     mutually_exclusive = [("lines", "src")]
 
@@ -368,9 +360,7 @@ def main():
             result["changed"] = True
         run_commands(module, commands=["exit"])
 
-    if result.get("changed") and any(
-        (module.params["src"], module.params["lines"])
-    ):
+    if result.get("changed") and any((module.params["src"], module.params["lines"])):
         msg = (
             "To ensure idempotency and correct diff the input configuration lines should be"
             " similar to how they appear if present in"

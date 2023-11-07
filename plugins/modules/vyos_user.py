@@ -33,9 +33,11 @@ description:
   collection of usernames in the current running config. It also supports purging
   usernames from the configuration that are not explicitly defined.
 version_added: 1.0.0
+extends_documentation_fragment:
+- vyos.vyos.vyos
 notes:
 - Tested against VyOS 1.1.8 (helium).
-- This module works with connection C(network_cli). See L(the VyOS OS Platform Options,../network/user_guide/platform_vyos.html).
+- This module works with connection C(ansible.netcommon.network_cli). See L(the VyOS OS Platform Options,../network/user_guide/platform_vyos.html).
 options:
   aggregate:
     description:
@@ -51,8 +53,7 @@ options:
       name:
         description:
         - The username to be configured on the VyOS device. This argument accepts a string
-          value and is mutually exclusive with the C(aggregate) argument. Please note
-          that this option is not same as C(provider username).
+          value and is mutually exclusive with the C(aggregate) argument.
         required: True
         type: str
       full_name:
@@ -63,8 +64,7 @@ options:
       configured_password:
         description:
         - The password to be configured on the VyOS device. The password needs to be provided
-          in clear and it will be encrypted on the device. Please note that this option
-          is not same as C(provider password).
+          in clear and it will be encrypted on the device.
         type: str
       update_password:
         description:
@@ -96,8 +96,7 @@ options:
   name:
     description:
     - The username to be configured on the VyOS device. This argument accepts a string
-      value and is mutually exclusive with the C(aggregate) argument. Please note
-      that this option is not same as C(provider username).
+      value and is mutually exclusive with the C(aggregate) argument.
     type: str
   full_name:
     description:
@@ -107,8 +106,7 @@ options:
   configured_password:
     description:
     - The password to be configured on the VyOS device. The password needs to be provided
-      in clear and it will be encrypted on the device. Please note that this option
-      is not same as C(provider password).
+      in clear and it will be encrypted on the device.
     type: str
   update_password:
     description:
@@ -146,8 +144,6 @@ options:
     choices:
     - present
     - absent
-extends_documentation_fragment:
-- vyos.vyos.vyos
 """
 
 EXAMPLES = """
@@ -185,29 +181,24 @@ commands:
 """
 
 import re
-
 from copy import deepcopy
 from functools import partial
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.six import iteritems
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
     remove_default_spec,
 )
+
 from ansible_collections.vyos.vyos.plugins.module_utils.network.vyos.vyos import (
     get_config,
     load_config,
-)
-from ansible.module_utils.six import iteritems
-from ansible_collections.vyos.vyos.plugins.module_utils.network.vyos.vyos import (
-    vyos_argument_spec,
 )
 
 
 def validate_level(value, module):
     if value not in ("admin", "operator"):
-        module.fail_json(
-            msg="level must be either admin or operator, got %s" % value
-        )
+        module.fail_json(msg="level must be either admin or operator, got %s" % value)
 
 
 def spec_to_commands(updates, module):
@@ -238,8 +229,7 @@ def spec_to_commands(updates, module):
                 add(
                     commands,
                     want,
-                    "authentication plaintext-password %s"
-                    % want["configured_password"],
+                    "authentication plaintext-password %s" % want["configured_password"],
                 )
 
     return commands
@@ -345,9 +335,7 @@ def main():
         full_name=dict(),
         level=dict(aliases=["role"]),
         configured_password=dict(no_log=True),
-        update_password=dict(
-            default="always", choices=["on_create", "always"]
-        ),
+        update_password=dict(default="always", choices=["on_create", "always"]),
         state=dict(default="present", choices=["present", "absent"]),
     )
 
@@ -368,7 +356,6 @@ def main():
     )
 
     argument_spec.update(element_spec)
-    argument_spec.update(vyos_argument_spec)
 
     mutually_exclusive = [("name", "aggregate")]
     module = AnsibleModule(

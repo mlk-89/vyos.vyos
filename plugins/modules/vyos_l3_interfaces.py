@@ -38,7 +38,7 @@ description: This module manages the L3 interface attributes on VyOS network dev
 version_added: 1.0.0
 notes:
 - Tested against VyOS 1.1.8 (helium).
-- This module works with connection C(network_cli). See L(the VyOS OS Platform Options,../network/user_guide/platform_vyos.html).
+- This module works with connection C(ansible.netcommon.network_cli). See L(the VyOS OS Platform Options,../network/user_guide/platform_vyos.html).
 author:
 - Nilashish Chakraborty (@NilashishC)
 - Rohit Thakur (@rohitthakur2590)
@@ -537,6 +537,7 @@ commands:
 
 
 from ansible.module_utils.basic import AnsibleModule
+
 from ansible_collections.vyos.vyos.plugins.module_utils.network.vyos.argspec.l3_interfaces.l3_interfaces import (
     L3_interfacesArgs,
 )
